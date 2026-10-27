@@ -248,7 +248,15 @@ class DetectionPipeline:
                 continue
 
             self._frame_id += 1
+            t0 = time.time()
             plates = self._process_frame(frame)
+            t1 = time.time()
+            # Speed optimisation: if processing takes > 0.5 s skip next read
+            if (t1 - t0) > 0.5:
+                try:
+                    self._cap.grab()  # drop next frame
+                except Exception:
+                    pass
 
             if self.callback:
                 for p in plates:

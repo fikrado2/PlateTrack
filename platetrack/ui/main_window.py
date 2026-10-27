@@ -24,6 +24,8 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
     QMessageBox,
+    QSystemTrayIcon,
+    QMenu,
     QStatusBar,
     # dialogs
     QInputDialog,
@@ -191,6 +193,24 @@ class MainWindow(QMainWindow):
         init_db()
         self._load_settings_into_ui()
         self._refresh_ui()
+
+        # ----- system tray icon -----
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(self.windowIcon())
+        tray_menu = QMenu()
+        show_action = QAction("Show", self)
+        hide_action = QAction("Hide", self)
+        exit_action = QAction("Exit", self)
+        show_action.triggered.connect(self.show)
+        hide_action.triggered.connect(self.hide)
+        exit_action.triggered.connect(self._on_tray_exit)
+        tray_menu.addAction(show_action)
+        tray_menu.addAction(hide_action)
+        tray_menu.addSeparator()
+        tray_menu.addAction(exit_action)
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.activated.connect(self._on_tray_activated)
+        self.tray_icon.show()
 
         logger.info("PlateTrack main window initialised")
 
@@ -489,3 +509,25 @@ Top plates today:
         for plate, cnt in counter.most_common(5):
             txt += f"  {plate}: {cnt}\n"
         self.report_view.setPlainText(txt.strip())
+
+    def _on_tray_activated(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.Trigger:
+            if self.isVisible():
+                self.hide()
+            else:
+                self.show()
+                self.activateWindow()
+
+    def _on_tray_exit(self):
+        self._stop_pipeline()
+        QApplication.instance().quit()
+
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
+        self.tray_icon.showMessage(
+            "PlateTrack",
+            "Application minimized to tray. The detection continues running.",
+            QSystemTrayIcon.MessageIcon.Information,
+            2000,
+        )
