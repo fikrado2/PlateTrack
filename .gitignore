@@ -73,6 +73,10 @@ docs/_build/
 Thumbs.db
 
 # PlateTrack specific
+# Rust build output
+target/
+Cargo.lock
+
 # Database and user data (should not be versioned)
 platetrack/data/
 platetrack/logs/
