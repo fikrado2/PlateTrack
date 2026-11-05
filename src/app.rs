@@ -158,12 +158,8 @@ impl PlateTrackApp {
             }
         }
     }
-}
 
-impl eframe::App for PlateTrackApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.handle_worker_messages();
-
+    fn render_top_panel(&mut self, ctx: &egui::Context) {
         egui::TopBottomPanel::top("top").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.heading("🚗 PlateTrack");
@@ -171,9 +167,12 @@ impl eframe::App for PlateTrackApp {
                 ui.selectable_value(&mut self.current_tab, 0, "Dashboard");
                 ui.selectable_value(&mut self.current_tab, 1, "History");
                 ui.selectable_value(&mut self.current_tab, 2, "Settings");
+                ui.selectable_value(&mut self.current_tab, 3, "About");
             });
         });
+    }
 
+    fn render_status_bar(&self, ctx: &egui::Context) {
         egui::TopBottomPanel::bottom("bottom").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 let color = if self.status_is_error {
@@ -184,11 +183,20 @@ impl eframe::App for PlateTrackApp {
                 ui.label(RichText::new(&self.status_message).color(color));
             });
         });
+    }
+}
+
+impl eframe::App for PlateTrackApp {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.handle_worker_messages();
+        self.render_top_panel(ctx);
+        self.render_status_bar(ctx);
 
         egui::CentralPanel::default().show(ctx, |ui| match self.current_tab {
             0 => self.ui_dashboard(ui),
             1 => self.ui_history(ui),
             2 => self.ui_settings(ui),
+            3 => self.ui_about(ui, ctx),
             _ => {}
         });
 
@@ -291,6 +299,7 @@ impl PlateTrackApp {
                         ui.label(&r.timestamp);
                         if ui.button("Delete").clicked() {
                             let _ = delete_record(r.id);
+                            self.refresh_history();
                         }
                         ui.end_row();
                     }
@@ -330,6 +339,63 @@ impl PlateTrackApp {
                 self.status_message = "Settings saved.".to_string();
             }
         }
+    }
+
+    fn ui_about(&mut self, ui: &mut Ui, ctx: &egui::Context) {
+        ui.vertical_centered(|ui| {
+            ui.add_space(20.0);
+            ui.heading(RichText::new("About PlateTrack").size(32.0).strong());
+            ui.add_space(10.0);
+
+            ui.label(RichText::new("Fikrado Security").size(24.0).color(Color32::from_rgb(0, 102, 204)));
+            ui.add_space(20.0);
+
+            ui.group(|ui| {
+                ui.set_width(500.0);
+                ui.label(
+                    "Fikrado Security is a leading provider of innovative security software solutions. \
+                    PlateTrack is our flagship license plate recognition tool, designed for performance, \
+                    privacy, and ease of use on the Windows platform."
+                );
+            });
+
+            ui.add_space(20.0);
+
+            egui::Grid::new("contact_info").num_columns(2).spacing([20.0, 10.0]).show(ui, |ui| {
+                ui.label("Email:");
+                ui.hyperlink_to("fikrado1@gmail.com", "mailto:fikrado1@gmail.com");
+                ui.end_row();
+
+                ui.label("Phone:");
+                ui.label("+252634048063 / +251984858498");
+                ui.end_row();
+
+                ui.label("Website:");
+                ui.hyperlink_to("fikrado2.github.io", "https://fikrado2.github.io");
+                ui.end_row();
+            });
+
+            ui.add_space(40.0);
+            ui.label(RichText::new("© 2026 Fikrado Security. All rights reserved.").weak());
+
+            // Load and display logo from C:\Users\yahye\Downloads\fikrado.png
+            let logo_path = std::path::Path::new(r"C:\Users\yahye\Downloads\fikrado.png");
+            if logo_path.exists() {
+                if let Ok(img) = image::open(logo_path) {
+                    let rgba = img.to_rgba8();
+                    let (w, h) = rgba.dimensions();
+                    let pixels = rgba.into_raw();
+                    let icon = egui::ColorImage::from_rgba_unmultiplied(
+                        [w as usize, h as usize],
+                        &pixels,
+                    );
+                    if let Some(tex) = ctx.load_texture("fikrado_logo", icon, Default::default()) {
+                        ui.add_space(20.0);
+                        ui.image(&tex, [w as f32 * 0.5, h as f32 * 0.5]);
+                    }
+                }
+            }
+        });
     }
 }
 

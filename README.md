@@ -1,195 +1,70 @@
-# PlateTrack
+# 🚗 PlateTrack
 
-A native Windows desktop application for license plate recognition, rebuilt from scratch in Rust.
+![Rust](https://img.shields.io/badge/language-Rust-orange.svg)
+![Windows](https://img.shields.io/badge/platform-Windows-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Release](https://img.shields.io/badge/release-v1.0.0--rust-blueviolet)
 
-**Original:** [fikrado2/PlateTrack](https://github.com/fikrado2/PlateTrack) (Python/PySide6)  
-**This version:** Rust + egui (fully native, single `.exe`, no Python dependency)
+**PlateTrack** is a high-performance, native Windows application for real-time and image-based license plate recognition (ALPR). Rebuilt from the ground up in Rust for maximum speed, security, and a minimal footprint.
 
----
-
-## Features
-
-- **License Plate Recognition** via [Plate Recognizer](https://github.com/parkpow/deep-license-plate-recognition) API (cloud Snapshot API)
-- **Image file support** – open via file dialog or drag-and-drop
-- **SQLite database** for storing all detection records locally
-- **History screen** – search, filter, view, and delete past detections
-- **CSV export** of all detection history
-- **Settings screen** – configure API token and endpoint
-- **Modern native UI** with egui (light/dark theme, responsive)
-- **All processing runs on background threads** – UI stays responsive
-- **Graceful error handling** – no crashes on network failure, invalid token, rate limit, or unreadable images
-- **Snapshots saved locally** for each detection
+> [!IMPORTANT]
+> This is a modern Rust rewrite of the original [fikrado2/PlateTrack](https://github.com/fikrado2/PlateTrack) Python application.
 
 ---
 
-## Screenshots
+## ✨ Features
 
-The app has three main screens:
-
-| Screen | Description |
-|---|---|
-| **Dashboard** | Stats cards (today/week/month counts) + recent detection result + open/drop image |
-| **History** | Table of all past detections with search, refresh, CSV export, and delete |
-| **Settings** | API token and endpoint configuration |
-
----
-
-## Getting an API Token
-
-1. Go to [platerecognizer.com](https://platerecognizer.com/) and sign up for a free account
-2. After logging in, go to your **Dashboard** → **API Token**
-3. Copy the token (starts with `pl_`)
-4. Paste it into PlateTrack's **Settings → API Token** field
-5. Click **Save Settings**
-
-> **Free tier:** Plate Recognizer offers a free tier with 500 credits/month. Each plate read costs 1 credit.
+- 🏎️ **Native Performance:** Fully compiled Rust code ensures rapid processing.
+- 🖼️ **Intuitive UI:** Modern, responsive interface built with `egui` (light/dark mode support).
+- 🔍 **ALPR Intelligence:** Powered by the [Plate Recognizer](https://platerecognizer.com/) Cloud Snapshot API.
+- 📂 **Drag-and-Drop:** Easily drop images directly into the app for instant recognition.
+- 🗄️ **Local Storage:** All detections are securely logged in a local SQLite database.
+- 📊 **History & Analytics:** Search, filter, and export your detection data to CSV.
+- 🛡️ **Fikrado Security:** Built with the quality and reliability expected from Fikrado products.
 
 ---
 
-## How to Build
+## 🚀 Getting Started
+
+### 1. Get an API Token
+1. Sign up at [platerecognizer.com](https://platerecognizer.com/).
+2. Copy your **API Token** from the dashboard.
+3. Launch PlateTrack, go to **Settings**, and paste your token.
+
+### 2. Installation
+Download the latest `PlateTrack.exe` from the [Releases](https://github.com/fikrado2/PlateTrack/releases) page and run it—no installation or Python runtime required!
+
+---
+
+## 🛠️ Build from Source
 
 ### Prerequisites
-
-- **Windows 10/11** (x86_64)
-- **Rust** (stable toolchain, `x86_64-pc-windows-msvc` target)
-- **Visual Studio Build Tools** with "Desktop development with C++" workload (needed for linking)
+- **Rust Stable** (`x86_64-pc-windows-msvc`)
+- **Visual Studio Build Tools** (C++ Desktop Development workload)
 
 ### Steps
-
 ```powershell
-# 1. Clone the repository
 git clone https://github.com/fikrado2/PlateTrack.git
 cd PlateTrack
-
-# 2. Build in release mode
-cargo build --release
-
-# 3. Run
-.\target\release\platetrack.exe
-```
-
-The executable will be at `target/release/platetrack.exe`.
-
-### Using Visual Studio Developer Command Prompt
-
-If `link.exe` is not found in PATH, open the **x64 Native Tools Command Prompt for VS**:
-
-```powershell
-cd PlateTrack
+git checkout rust-rewrite
 cargo build --release
 ```
+The binary will be generated at `.\target\release\platetrack.exe`.
 
 ---
 
-## Project Structure
+## 🏢 About Fikrado Security
 
-```
-PlateTrack/
-├── Cargo.toml              # Dependencies and build config
-├── README.md                # This file
-├── src/
-│   ├── main.rs              # Binary entry point
-│   ├── lib.rs               # Library root
-│   ├── app.rs               # Main app + eframe setup + UI screens
-│   ├── config.rs            # Settings persistence (AppData/config.json)
-│   ├── db.rs                # SQLite database (rusqlite)
-│   ├── api.rs               # Plate Recognizer API client (reqwest)
-│   ├── logging.rs           # Tracing/logging setup
-│   └── ui/
-│       └── mod.rs           # UI re-exports
-└── target/                  # Build output
-```
+Fikrado Security is a leading provider of innovative security software solutions. We specialize in building robust tools that empower organizations and individuals to manage their security needs with ease and precision.
+
+- **📧 Email:** [fikrado1@gmail.com](mailto:fikrado1@gmail.com)
+- **📞 Phone:** +252634048063 / +251984858498
+- **🌐 Website:** [fikrado2.github.io](https://fikrado2.github.io)
 
 ---
 
-## Technology Choices
+## 📝 License
 
-- **GUI:** `egui` + `eframe` – most mature fully-native Rust GUI framework. No Electron, no web views, no platform-specific toolkits needed.
-- **Database:** `rusqlite` with SQLite WAL mode – fast, single-file, zero-config
-- **API Client:** `reqwest` blocking client (no async runtime needed)
-- **Config:** `directories` crate for correct AppData path on Windows; JSON config file
-- **Logging:** `tracing` + `tracing-subscriber` with file rotation
+Distributed under the MIT License. See `LICENSE` for more information.
 
----
-
-## Data Storage
-
-All data is stored in the user's AppData folder:
-
-```
-%APPDATA%\PlateTrack\
-├── config.json          # User settings (API token, etc.)
-├── platetrack.db        # SQLite database
-├── snapshots\           # Saved detection images
-└── logs\
-    └── platetrack.log   # Application logs
-```
-
----
-
-## API Integration
-
-PlateTrack uses the **Plate Recognizer Snapshot API**:
-
-```
-POST https://api.platerecognizer.com/v1/plate-reader/
-Authorization: Token YOUR_API_TOKEN
-Content-Type: multipart/form-data
-
-upload: <image file bytes>
-```
-
-The API returns a JSON response:
-
-```json
-{
-  "results": [{
-    "plate": "ABC123",
-    "confidence": 0.95,
-    "vehicle": { "type": "Car" },
-    "box": { "xmin": 120, "ymin": 80, "xmax": 400, "ymax": 150 }
-  }]
-}
-```
-
----
-
-## Error Handling
-
-| Error | User message |
-|---|---|
-| No API token | "API Token is not configured." |
-| Network failure | "API Error: connection failed" |
-| Invalid token (401) | "API Error: Invalid API token" |
-| Rate limit (429) | "API Error: rate limit exceeded" |
-| Unreadable image | "Could not read image file" |
-| No plate detected | "No plate detected in image" |
-
----
-
-## Branch & Commits
-
-This Rust rewrite is on branch `rust-rewrite`. To push:
-
-```powershell
-git checkout -b rust-rewrite
-git add .
-git commit -m "Initial Rust rewrite: egui UI, rusqlite DB, Plate Recognizer API"
-git push origin rust-rewrite
-```
-
----
-
-## Building the Installer (Optional)
-
-After building the release `.exe`, you can create a Windows installer using [Inno Setup](https://jrsoftware.org/isinfo.php):
-
-1. Install Inno Setup
-2. Create a script pointing to `target/release/platetrack.exe`
-3. Compile to produce a single `.exe` installer
-
----
-
-## License
-
-MIT License – same as the original project. See `LICENSE` file.
+Built with ❤️ by [Fikrado Security](https://github.com/fikrado2)
